@@ -2,22 +2,20 @@ import discord
 from discord.ext import commands
 import asyncio
 from copy import deepcopy
-from typing import List, Tuple
+from typing import List
 from .abc import Dialog
 
 
 class EmbedPaginator(Dialog):
     """ Represents an interactive menu containing multiple embeds. """
 
-    def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None, *,
-                control_emojis: Tuple[str, str, str, str, str] = None):
+    def __init__(self, client: discord.Client, pages: [discord.Embed], message: discord.Message = None):
         """
         Initialize a new EmbedPaginator.
 
         :param client: The :class:`discord.Client` to use.
         :param pages: A list of :class:`discord.Embed` to paginate through.
         :param message: An optional :class:`discord.Message` to edit. Otherwise a new message will be sent.
-        :param control_emojis: An option :class:`typing.Tuple` of control emojis to use, otherwise the default will be used
         """
         super().__init__()
 
@@ -25,7 +23,7 @@ class EmbedPaginator(Dialog):
         self.pages = pages
         self.message = message
 
-        self.control_emojis = control_emojis or ('⏮', '◀', '▶', '⏭', '⏹')
+        self.control_emojis = ('⏮', '◀', '▶', '⏭')
 
     @property
     def formatted_pages(self):
@@ -84,7 +82,7 @@ class EmbedPaginator(Dialog):
 
         while True:
             try:
-                reaction, user = await self._client.wait_for('reaction_add', check=check, timeout=100)
+                reaction, user = await self._client.wait_for('reaction_add', check=check)
             except asyncio.TimeoutError:
                 if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
                     await self.message.clear_reactions()
@@ -110,8 +108,8 @@ class EmbedPaginator(Dialog):
                 return
 
             await self.message.edit(embed=self.formatted_pages[load_page_index])
-            if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
-                await self.message.remove_reaction(reaction, user)
+            #if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
+            #    await self.message.remove_reaction(reaction, user)
 
             current_page_index = load_page_index
 
@@ -133,8 +131,7 @@ class EmbedPaginator(Dialog):
 
 
 class BotEmbedPaginator(EmbedPaginator):
-    def __init__(self, ctx: commands.Context, pages: [discord.Embed], message: discord.Message = None, *,
-                 control_emojis: Tuple[str, str, str, str, str] = None):
+    def __init__(self, ctx: commands.Context, pages: [discord.Embed], message: discord.Message = None):
         """
         Initialize a new EmbedPaginator.
 
@@ -144,7 +141,7 @@ class BotEmbedPaginator(EmbedPaginator):
         """
         self._ctx = ctx
 
-        super(BotEmbedPaginator, self).__init__(ctx.bot, pages, message, control_emojis=control_emojis)
+        super(BotEmbedPaginator, self).__init__(ctx.bot, pages, message)
 
     async def run(self, channel: discord.TextChannel = None, users: List[discord.User] = None):
         """
