@@ -108,8 +108,8 @@ class EmbedPaginator(Dialog):
                 return
 
             await self.message.edit(embed=self.formatted_pages[load_page_index])
-            #if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
-            #    await self.message.remove_reaction(reaction, user)
+            if not isinstance(channel, discord.channel.DMChannel) and not isinstance(channel, discord.channel.GroupChannel):
+                await self.message.remove_reaction(reaction, user)
 
             current_page_index = load_page_index
 
